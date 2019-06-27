@@ -1,0 +1,1 @@
+{"subsample": 1, "n_estimators": 216, "min_child_weight": 2, "max_depth": 1, "learning_rate": 0.1, "colsample_bytree": 0.7}
