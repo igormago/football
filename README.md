@@ -13,5 +13,5 @@ https://datahub.io/igormago/football_with_odds/v/1
 
 -- BEST PARAMETERS --
 
-# cikm/[model]/bestparams: The best parameters of each model.
-# cikm/[model]/tunning: Partial results of validation
+cikm/[model]/bestparams: The best parameters of each model.
+cikm/[model]/tunning: Partial results of validation
