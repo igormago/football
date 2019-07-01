@@ -1,4 +1,6 @@
 from argparse import ArgumentParser
+
+from pandas.io.json import json_normalize
 from pymongo import UpdateOne, InsertOne, IndexModel, ASCENDING
 from core.logger import logging, log_in_out
 import numpy as np
@@ -108,7 +110,6 @@ def extract_matches(config):
         fixtures = session.get_collection(COL_FIXTURES).find({'trends.data.type': 'possession'})
 
     requests = list()
-    batch_size = 1000
 
     if config.drop:
         logger.info('Removing the collection %s ' % COL_MATCHES)
@@ -172,8 +173,8 @@ def extract_matches(config):
 
         requests.append(InsertOne(match))
 
-        if is_to_submit(idx, batch_size):
-            logger.info('Saving in the database block [%i-%i]' % (idx-batch_size, idx))
+        if is_to_submit(idx, config.bulk_size):
+            logger.info('Saving in the database block [%i-%i]' % (idx - config.bulk_size, idx))
             save_db(requests, config)
             requests = list()
 
@@ -331,7 +332,7 @@ def process_trends(config):
 
     for idx, m in enumerate(matches):
 
-        logger.debug('[%i] Processing Match: %i ' % (idx, m['id']))
+        logger.debug('[%i] Processing Match Trends: %i ' % (idx, m['id']))
         update = process_trends_by_match(m)
         requests.append(UpdateOne({'_id': m['_id']}, {'$set': update}))
 
@@ -413,10 +414,11 @@ def process_trends_by_match(match):
 
 
 def get_matches(config):
+
     if config.limit is None:
-        matches = session.get_collection(COL_MATCHES).find({'selected': True})
+        matches = session.get_collection(COL_MATCHES).find({'selected': True}).skip(config.skip)
     else:
-        matches = session.get_collection(COL_MATCHES).find({'selected': True}).limit(config.limit)
+        matches = session.get_collection(COL_MATCHES).find({'selected': True}).skip(config.skip).limit(config.limit)
     return matches
 
 
@@ -429,7 +431,7 @@ def process_cards(config):
 
     for idx, m in enumerate(matches):
 
-        logger.debug('[%i] Processing Match: %i ' % (idx, m['id']))
+        logger.debug('[%i] Processing Match Cards: %i ' % (idx, m['id']))
         update = process_cards_by_match(m)
         requests.append(UpdateOne({'_id': m['_id']}, {'$set': update}))
 
@@ -469,6 +471,15 @@ def process_cards_by_match(m):
     deaccum.fillna(0, inplace=True)
     accum = deaccum.cumsum()
 
+    sub = pd.DataFrame()
+    ratio = pd.DataFrame()
+
+    for col in stats_list:
+        home = '_'.join([col, 'home'])
+        away = '_'.join([col, 'away'])
+        sub[col] = accum[home] - accum[away]
+        ratio[col] = round(accum.apply(lambda row: stat_proportion(row, col), axis=1), 3)
+
     accum_events_json = accum.to_json()
     accum_events_dict = json.loads(accum_events_json)
     update['accum_cards'] = accum_events_dict
@@ -476,6 +487,15 @@ def process_cards_by_match(m):
     deaccum_events_json = deaccum.to_json()
     deaccum_events_dict = json.loads(deaccum_events_json)
     update['deaccum_cards'] = deaccum_events_dict
+
+    ratio_json = ratio.to_json()
+    ratio_dict = json.loads(ratio_json)
+    update['ratio_cards'] = ratio_dict
+
+    sub_json = sub.to_json()
+    sub_dict = json.loads(sub_json)
+    update['sub_cards'] = sub_dict
+
 
     return update
 
@@ -592,23 +612,30 @@ def main():
     parser.add_argument("-b", "--bulk_size", dest="bulk_size", default=1000,
                         help="the bulk size to save in the database", type=int)
 
+    parser.add_argument("-k", "--method", dest="method",
+                        help="invoke a method by name")
+
+    parser.add_argument("-i", "--skip", dest="skip", default=0,
+                        help="the number of matches to skip", type=int)
+
     config = parser.parse_args()
 
-    if config.action == EXTRACT:
+    if config.method is not None:
+        method_to_call = globals()[config.method]
+        method_to_call(config)
+    elif config.action == EXTRACT:
         extract_matches(config)
-    if config.action == CHECK:
+    elif config.action == CHECK:
         if config.match_id is not None:
             check_single_match(config)
         else:
             check_all_matches(config)
-
-    if config.action == PROCESS:
+    elif config.action == PROCESS:
         if config.match_id is not None:
             process_single_match(config)
         else:
             preprocessing_complete(config)
-
-    if config.action == ALL:
+    elif config.action == ALL:
         extract_matches(config)
         check_all_matches(config)
         preprocessing_complete(config)
@@ -623,6 +650,107 @@ def get_minute_of_card(event):
             minute = minute + extra_minute
 
     return minute-1
+
+
+def process_odds(config):
+
+    def get_summary_by_column():
+
+        if tp == 'o':
+            col = 'value'
+        else:
+            col = 'prob'
+
+        method_to_call = getattr(df[col], method)
+        result = method_to_call()
+
+        return round(result, 5)
+
+    matches = get_matches(config)
+    requests = list()
+
+    for idx, m in enumerate(matches):
+
+        logger.debug('[%i] Processing Match Odds: %i ' % (idx, m['id']))
+        fixture = session.get_collection('fixtures').find_one({'id': m['id'], 'odds.data.id': 1},
+                                                              {'odds.data.$': 1})
+        update = dict()
+        odds_summary = dict()
+
+        try:
+            od_1 = fixture['odds']['data']
+        except TypeError:
+            logger.debug('[%i] Match without odds: %i ' % (idx, m['id']))
+            update['with_odds'] = False
+            requests.append(UpdateOne({'_id': m['_id']}, {'$set': update}))
+            continue
+
+        odds_list = list()
+        for d1 in od_1:
+            od_2 = d1['bookmaker']['data']
+            for d2 in od_2:
+                odds = d2['odds']['data']
+                for o in odds:
+                    odds_list.append(o)
+
+        df = pd.DataFrame.from_dict(json_normalize(odds_list), orient='columns')
+        df['value'] = pd.to_numeric(df['value'])
+
+        df['prob'] = 1 / df['value']
+
+        home = df[df['label'] == '1']
+        draw = df[df['label'] == 'X']
+        away = df[df['label'] == '2']
+
+        odds_summary['n_books'] = len(home)
+
+        for label, df in zip(['home', 'draw', 'away'], [home, draw, away]):
+            for method in ['max', 'min', 'mean', 'std']:
+                for tp in ['o', 'p']:
+
+                    field = '_'.join(([tp, method, label]))
+                    odds_summary[field] = get_summary_by_column()
+
+        if odds_summary['o_mean_home'] <= 1 or odds_summary['o_mean_draw'] <= 1 or odds_summary['o_mean_away'] <= 1:
+
+            logger.debug('[%i] Exception in odds values of Match: %i ' % (idx, m['id']))
+            update['with_odds'] = False
+            requests.append(UpdateOne({'_id': m['_id']}, {'$set': update}))
+            continue
+
+        raw = [odds_summary['p_mean_home'], odds_summary['p_mean_draw'], odds_summary['p_mean_away']]
+        pred_final = [float(i) / sum(raw) for i in raw]
+
+        odds_summary['p_norm_home'] = round(pred_final[0], 5)
+        odds_summary['p_norm_draw'] = round(pred_final[1], 5)
+        odds_summary['p_norm_away'] = round(pred_final[2], 5)
+
+        idx_prediction = np.argmax(pred_final)
+
+        if idx_prediction == 0:
+            fav = 'home'
+        elif idx_prediction == 1:
+            fav = 'draw'
+        else:
+            fav = 'away'
+
+        for method in ['max', 'min', 'mean', 'std']:
+            for tp in ['o', 'p']:
+
+                field = '_'.join(([tp, method, fav]))
+                field_fav = '_'.join(([tp, method, 'fav']))
+                odds_summary[field_fav] = odds_summary[field]
+
+        update['odds'] = odds_summary
+        update['with_odds'] = True
+        requests.append(UpdateOne({'_id': m['_id']}, {'$set': update}))
+
+        if is_to_submit(idx, config.bulk_size):
+            logger.info('Saving in the database block [%i-%i]' % (idx - config.bulk_size, idx))
+            save_db(requests, config)
+            requests = list()
+
+    save_db(requests, config)
 
 
 if __name__ == "__main__":

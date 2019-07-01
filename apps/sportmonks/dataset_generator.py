@@ -9,19 +9,20 @@ from core.config_loader import Config, Database
 
 session = Database.get_session_sportmonks()
 
+ALL = 0
 PARTIAL = 1
 SINGLE = 2
 FINAL = 3
 
 
-def create_partial_frames(dataset_id, selection, projection):
+def create_partial_frames(config, selection, projection):
 
     partial_size = 1000
     idx_from = 0
     idx_to = 0
     num_matches = session.get_collection('matches').count_documents(selection)
 
-    dataset_dir = os.path.join(Config.path('datasets'), dataset_id)
+    dataset_dir = os.path.join(Config.path('datasets'), config.dataset_id)
     partial_dir = os.path.join(dataset_dir, 'partial')
 
     if not os.path.exists(dataset_dir):
@@ -52,9 +53,9 @@ def create_partial_frames(dataset_id, selection, projection):
         idx_file += 1
 
 
-def create_single_dataframe(dataset_id):
+def create_single_dataframe(config):
 
-    partial_dir = os.path.join(Config.path('datasets'), dataset_id, 'partial')
+    partial_dir = os.path.join(Config.path('datasets'), config.dataset_id, 'partial')
     files = sorted(os.listdir(partial_dir))
 
     print('Concatenating file %s' % files[0])
@@ -69,44 +70,44 @@ def create_single_dataframe(dataset_id):
         df = pd.concat([df, df_temp], sort=True)
 
     df_file_name = 'a.csv'
-    df_file_path = os.path.join(Config.path('datasets'), dataset_id, df_file_name)
+    df_file_path = os.path.join(Config.path('datasets'), config.dataset_id, df_file_name)
     df.to_csv(df_file_path)
 
 
-def create_final_dataframe(dataset_id):
+def create_final_dataframe(config):
 
-    file_path = os.path.join(Config.path('datasets'), dataset_id, 'df_single.csv')
+    file_path = os.path.join(Config.path('datasets'), config.dataset_id, 'df_single.csv')
     df = pd.read_csv(file_path)
 
     features = list()
-    if 'sm_counter_odds' in dataset_id:
+    if 'sm_counter_odds' in config.dataset_id:
         features = process_counter(df)
 
     df = df[features]
 
     df_file_name = 'df_final.csv'
-    df_file_path = os.path.join(Config.path('datasets'), dataset_id, df_file_name)
+    df_file_path = os.path.join(Config.path('datasets'), config.dataset_id, df_file_name)
     df.to_csv(df_file_path)
 
 
-def get_selection_projection(dataset_id):
+def get_selection_projection(config):
 
     selection_with_odds = {'selected': 1, 'odds': {'$exists': 1}}
     selection_without_odds = {'selected': 1}
 
-    if dataset_id == 'sm_counter':
+    if config.dataset_id == 'sm_counter':
         projection = {'observed': 1, 'date': 1, 'result': 1, 'counter_trends': 1,
                       'counter_cards': 1, 'possession': 1}
 
         return selection_without_odds, projection
 
-    elif dataset_id == 'sm_trans':
+    elif config.dataset_id == 'sm_trans':
         projection = {'observed': 1, 'date': 1, 'result': 1, 'counter_trends': 1,
                       'counter_cards': 1, 'possession': 1}
 
         return selection_without_odds, projection
 
-    elif dataset_id == 'sm_counter_odds':
+    elif config.dataset_id == 'sm_counter_odds':
 
         projection = {'observed': 1, 'date': 1, 'result': 1, 'counter_trends': 1, 'counter_cards': 1,
                       'possession': 1, 'odds': 1}
@@ -154,24 +155,33 @@ def process_counter(df):
     return features
 
 
+def create_dataset_complete(config):
+    selection, projection = get_selection_projection(config)
+    create_partial_frames(config, selection, projection)
+    create_single_dataframe(config)
+    create_final_dataframe(config)
+
+
 def main():
 
     parser = ArgumentParser()
     parser.add_argument("-d", "--dataset", dest="dataset_id",
                         help="inform the id of dataset")
 
-    parser.add_argument("-a", "--action", dest="action", choices=[PARTIAL, SINGLE, FINAL],
-                        help="1- partial | 2- single | 3- final ", type=int)
+    parser.add_argument("-a", "--action", dest="action", choices=[PARTIAL, SINGLE, FINAL, ALL],
+                        help="1- partial | 2- single | 3- final | 0- all steps ", type=int)
 
     config = parser.parse_args()
 
     if config.action == PARTIAL:
-        selection, projection = get_selection_projection(config.dataset_id)
-        create_partial_frames(config.dataset_id, selection, projection)
+        selection, projection = get_selection_projection(config)
+        create_partial_frames(config, selection, projection)
     elif config.action == SINGLE:
-        create_single_dataframe(config.dataset_id)
+        create_single_dataframe(config)
     elif config.action == FINAL:
-        create_final_dataframe(config.dataset_id)
+        create_final_dataframe(config)
+    elif config.action == ALL:
+        create_dataset_complete(config)
 
 
 if __name__ == "__main__":
