@@ -17,6 +17,10 @@ folder: cikm/[model]/bestparams: The best parameters of each model.
 
 folder: cikm/[model]/tunning: Partial results of validation
 
+**-- CODE --**
+
+We are doing a refactoring in our code. The version used for CIKM is in the folder */old*. The new version of the software is being deployed on root.
+
 **-- TUTORIAL --**
 
 Soon we will provide a guide to reproduce the experiments of paper.
