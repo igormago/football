@@ -19,7 +19,7 @@ folder: cikm/[model]/tunning: Partial results of validation
 
 **-- CODE --**
 
-We are doing a refactoring in our code. The version used for CIKM is in the folder */old*. The new version of the software is being deployed on root.
+We are refactoring the code. The last version, used for the experiments of CIKM, is in the folder */old*. The new version of the software is being deployed on the root.
 
 **-- TUTORIAL --**
 
