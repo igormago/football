@@ -20,6 +20,8 @@ ALL = 4
 
 SELECTED = 'selected'
 STATUS_ERROR = 'status_error'
+COL_MATCHES = 'm_matches'
+COL_FIXTURES = 'fixtures'
 
 
 class PreProcessingException(Exception):
@@ -86,16 +88,29 @@ def is_to_submit(idx, batch_size=5000):
     return idx >= batch_size and idx % batch_size == 0
 
 
-COL_MATCHES = 'm_matches'
-COL_FIXTURES = 'fixtures'
-
-
 def get_columns(stats_list):
     columns = list()
     for s in stats_list:
         columns.append(s + '_home')
         columns.append(s + '_away')
     return columns
+
+
+def get_matches(config):
+
+    if config.limit is None:
+        matches = session.get_collection(COL_MATCHES).find({'selected': True}).skip(config.skip)
+    else:
+        matches = session.get_collection(COL_MATCHES).find({'selected': True}).skip(config.skip).limit(config.limit)
+    return matches
+
+
+def stat_proportion(row, stat):
+
+    if row[stat + "_home"] == row[stat + "_away"]:
+        return 0.5
+    else:
+        return row[stat + "_home"] / (row[stat + "_away"] + row[stat + "_home"])
 
 
 @log_in_out
@@ -122,54 +137,7 @@ def extract_matches(config):
     for idx, f in enumerate(fixtures):
 
         logger.debug('[%i] Extracting Match: %i ' % (idx, f['id']))
-        match = dict()
-        match['id'] = f['id']
-
-        try:
-            try:
-                match['team_home_id'] = f['localteam_id']
-                match['team_away_id'] = f['visitorteam_id']
-                match['team_home_leg_id'] = f['localTeam']['data']['legacy_id']
-                match['team_away_leg_id'] = f['visitorTeam']['data']['legacy_id']
-                match['league_id'] = f['league_id']
-                match['season_id'] = f['season_id']
-                match['score_home'] = f['scores']['localteam_score']
-                match['score_away'] = f['scores']['visitorteam_score']
-                match['date'] = f['time']['starting_at']['date']
-                match['time'] = f['time']['starting_at']['time']
-                match['observed'] = dict()
-            except KeyError:
-                raise RequiredKeyException
-
-            if match['score_home'] > match['score_away']:
-                match['result'] = 'H'
-                observed = {'home': 1, 'draw': 0, 'away': 0}
-                match['observed'] = observed
-
-            elif match['score_home'] == match['score_away']:
-                match['result'] = 'D'
-                observed = {'home': 0, 'draw': 1, 'away': 0}
-                match['observed'] = observed
-            else:
-                match['result'] = 'A'
-                observed = {'home': 0, 'draw': 0, 'away': 1}
-                match['observed'] = observed
-
-            if f['time']['minute'] is None:
-                raise NoneMinutesException
-            else:
-                if f['time']['injury_time'] is None:
-                    match['minutes'] = f['time']['minute']
-                else:
-                    match['minutes'] = f['time']['minute'] + f['time']['injury_time']
-
-                match['minute_max'] = match['minutes']
-
-                match[SELECTED] = True
-
-        except (RequiredKeyException, NoneMinutesException) as ex:
-            match[STATUS_ERROR] = ex.code
-            match[SELECTED] = False
+        match = extract_single_match(f)
 
         requests.append(InsertOne(match))
 
@@ -179,6 +147,59 @@ def extract_matches(config):
             requests = list()
 
     save_db(requests, config)
+
+
+def extract_single_match(f):
+
+    match = dict()
+    match['id'] = f['id']
+    try:
+        try:
+            match['team_home_id'] = f['localteam_id']
+            match['team_away_id'] = f['visitorteam_id']
+            match['team_home_leg_id'] = f['localTeam']['data']['legacy_id']
+            match['team_away_leg_id'] = f['visitorTeam']['data']['legacy_id']
+            match['league_id'] = f['league_id']
+            match['season_id'] = f['season_id']
+            match['score_home'] = f['scores']['localteam_score']
+            match['score_away'] = f['scores']['visitorteam_score']
+            match['date'] = f['time']['starting_at']['date']
+            match['time'] = f['time']['starting_at']['time']
+            match['observed'] = dict()
+        except KeyError:
+            raise RequiredKeyException
+
+        if match['score_home'] > match['score_away']:
+            match['result'] = 'H'
+            observed = {'home': 1, 'draw': 0, 'away': 0}
+            match['observed'] = observed
+
+        elif match['score_home'] == match['score_away']:
+            match['result'] = 'D'
+            observed = {'home': 0, 'draw': 1, 'away': 0}
+            match['observed'] = observed
+        else:
+            match['result'] = 'A'
+            observed = {'home': 0, 'draw': 0, 'away': 1}
+            match['observed'] = observed
+
+        if f['time']['minute'] is None:
+            raise NoneMinutesException
+        else:
+            if f['time']['injury_time'] is None:
+                match['minutes'] = f['time']['minute']
+            else:
+                match['minutes'] = f['time']['minute'] + f['time']['injury_time']
+
+            match['minute_max'] = match['minutes']
+
+            match[SELECTED] = True
+
+    except (RequiredKeyException, NoneMinutesException) as ex:
+        match[STATUS_ERROR] = ex.code
+        match[SELECTED] = False
+
+    return match
 
 
 @log_in_out
@@ -196,7 +217,7 @@ def check_all_matches(config):
     for idx, m in enumerate(matches):
 
         logger.debug('[%i] Checking Match: %i ' % (idx, m['id']))
-        update = check_match_by_id(m)
+        update = check_single_match(m)
         requests.append(UpdateOne({'_id': m['_id']}, {'$set': update}))
 
         if is_to_submit(idx, config.bulk_size):
@@ -207,7 +228,7 @@ def check_all_matches(config):
     save_db(requests, config)
 
 
-def check_match_by_id(match):
+def check_single_match(match):
 
     update = {}
     fixture = session.get_collection(COL_FIXTURES).find_one({'id': match['id']})
@@ -257,6 +278,49 @@ def check_match_by_id(match):
     return update
 
 
+@log_in_out
+def check_match_by_id(config):
+
+    match = session.get_collection(COL_MATCHES).find_one({'id': config.match_id})
+
+    update = check_single_match(match)
+    requests = list()
+    requests.append(UpdateOne({'_id': match['_id']}, {'$set': update}))
+    save_db(requests, config)
+
+
+def check_teams(home_ids, away_ids, target):
+
+    try:
+        team_id = int(target['team_id'])
+        if team_id not in home_ids and team_id not in away_ids:
+            logger.debug('Exception: Invalid Team in trends')
+            raise TeamIdentifierException
+    except TypeError:
+        raise TeamIdentifierException
+
+
+def check_trend(trend, update):
+
+    analyses = trend['analyses']
+    df = pd.DataFrame.from_dict(analyses)
+    df.minute = df.minute.astype(int)
+    df.amount = df.amount.astype(int)
+    df.set_index('minute', inplace=True)
+    df.sort_index(inplace=True)
+    df.astype('int64')
+
+    if df.index.values.item(0) < 0 or df.index.values.item(-1) > 150:
+        raise TrendMinuteInvalidException
+    elif any(df['amount'] < 0):
+        raise TrendAmountInvalidEventException
+
+    if df.index.values.item(-1) > update['minute_max']:
+        update['minute_max'] = df.index.values.item(-1)
+
+    return df
+
+
 def check_cards(cards, update):
 
     def get_real_minute(row):
@@ -286,38 +350,6 @@ def check_cards(cards, update):
                     update['minute_max'] = df.index.values.item(-1)
 
 
-def check_trend(trend, update):
-
-    analyses = trend['analyses']
-    df = pd.DataFrame.from_dict(analyses)
-    df.minute = df.minute.astype(int)
-    df.amount = df.amount.astype(int)
-    df.set_index('minute', inplace=True)
-    df.sort_index(inplace=True)
-    df.astype('int64')
-
-    if df.index.values.item(0) < 0:
-        raise TrendMinuteInvalidException
-    elif any(df['amount'] < 0):
-        raise TrendAmountInvalidEventException
-
-    if df.index.values.item(-1) > update['minute_max']:
-        update['minute_max'] = df.index.values.item(-1)
-
-    return df
-
-
-def check_teams(home_ids, away_ids, target):
-
-    try:
-        team_id = int(target['team_id'])
-        if team_id not in home_ids and team_id not in away_ids:
-            logger.debug('Exception: Invalid Team in trends')
-            raise TeamIdentifierException
-    except TypeError:
-        raise TeamIdentifierException
-
-
 def save_db(requests, config):
 
     if config.save and len(requests) > 0:
@@ -342,14 +374,6 @@ def process_trends(config):
             requests = list()
 
     save_db(requests, config)
-
-
-def stat_proportion(row, stat):
-
-    if row[stat + "_home"] == row[stat + "_away"]:
-        return 0.5
-    else:
-        return row[stat + "_home"] / (row[stat + "_away"] + row[stat + "_home"])
 
 
 def process_trends_by_match(match):
@@ -411,15 +435,6 @@ def process_trends_by_match(match):
     update['sub_trends'] = sub_dict
 
     return update
-
-
-def get_matches(config):
-
-    if config.limit is None:
-        matches = session.get_collection(COL_MATCHES).find({'selected': True}).skip(config.skip)
-    else:
-        matches = session.get_collection(COL_MATCHES).find({'selected': True}).skip(config.skip).limit(config.limit)
-    return matches
 
 
 @log_in_out
@@ -496,16 +511,7 @@ def process_cards_by_match(m):
     sub_dict = json.loads(sub_json)
     update['sub_cards'] = sub_dict
 
-
     return update
-
-
-def create_events_dataframe(columns, minutes):
-
-    df = pd.DataFrame(columns=columns)
-    df['minute'] = range(0, minutes + 1)
-    df.set_index('minute', inplace=True)
-    return df
 
 
 def add_trend(local, trend, accum_events):
@@ -518,6 +524,42 @@ def add_trend(local, trend, accum_events):
         minute = int(trend['minute'])
         amount = int(trend['amount'])
         accum_events.loc[minute, col] = amount
+
+
+def add_card(local, card_event, deaccum_events):
+
+    def get_minute_of_card(event):
+
+        normal_minute = event['minute']
+        if normal_minute == 90:
+            extra_minute = event['extra_minute']
+            if extra_minute is not None:
+                normal_minute = normal_minute + extra_minute
+
+        return normal_minute - 1
+
+    try:
+        minute = get_minute_of_card(card_event)
+    except TypeError:
+        return
+
+    if card_event['type'] == 'yellowcard':
+        col = 'yellow_cards_' + local
+    else:
+        col = 'red_cards_' + local
+
+    if np.isnan(deaccum_events.loc[minute, col]):
+        deaccum_events.loc[minute, col] = 1
+    else:
+        deaccum_events.loc[minute, col] += 1
+
+
+def create_events_dataframe(columns, minutes):
+
+    df = pd.DataFrame(columns=columns)
+    df['minute'] = range(0, minutes + 1)
+    df.set_index('minute', inplace=True)
+    return df
 
 
 def fill_empty_values(col, accum_events, deaccum_events):
@@ -539,38 +581,15 @@ def fill_empty_values(col, accum_events, deaccum_events):
             deaccum_events.loc[idx, col] = accum_events.loc[idx, col] - accum_events.loc[idx - 1, col]
 
 
-def add_card(local, card_event, deaccum_events):
+def process_matches(config):
 
-    try:
-        minute = get_minute_of_card(card_event)
-    except TypeError:
-        return
-
-    if card_event['type'] == 'yellowcard':
-        col = 'yellow_cards_' + local
-    else:
-        col = 'red_cards_' + local
-
-    if np.isnan(deaccum_events.loc[minute, col]):
-        deaccum_events.loc[minute, col] = 1
-    else:
-        deaccum_events.loc[minute, col] += 1
+    process_trends(config)
+    process_cards(config)
+    process_odds(config)
 
 
 @log_in_out
-def check_single_match(config):
-
-    match = session.get_collection(COL_MATCHES).find_one({'id': config.match_id})
-
-    update = check_match_by_id(match)
-    requests = list()
-    requests.append(UpdateOne({'_id': match['_id']}, {'$set': update}))
-    save_db(requests, config)
-
-
-@log_in_out
-def process_single_match(config):
-
+def process_match_by_id(config):
     match = session.get_collection(COL_MATCHES).find_one({'id': config.match_id})
 
     update = process_cards_by_match(match)
@@ -582,74 +601,6 @@ def process_single_match(config):
     requests = list()
     requests.append(UpdateOne({'_id': match['_id']}, {'$set': update}))
     save_db(requests, config)
-
-
-def preprocessing_complete(config):
-
-    process_cards(config)
-    process_trends(config)
-
-
-def main():
-
-    parser = ArgumentParser()
-
-    parser.add_argument("-a", "--action", dest="action", choices=[EXTRACT, CHECK, PROCESS, ALL],
-                        help="1- extract | 2- single | 3- final ", type=int)
-
-    parser.add_argument("-d", "--drop", action="store_true", dest="drop", default=False,
-                        help="drop the collection of matches")
-
-    parser.add_argument("-s", "--save", action="store_true", dest="save", default=False,
-                        help="save the changes in the database")
-
-    parser.add_argument("-m", "--match", dest="match_id",
-                        help="inform a valid match ID ", type=int)
-
-    parser.add_argument("-l", "--limit", dest="limit",
-                        help="inform a number of matches", type=int)
-
-    parser.add_argument("-b", "--bulk_size", dest="bulk_size", default=1000,
-                        help="the bulk size to save in the database", type=int)
-
-    parser.add_argument("-k", "--method", dest="method",
-                        help="invoke a method by name")
-
-    parser.add_argument("-i", "--skip", dest="skip", default=0,
-                        help="the number of matches to skip", type=int)
-
-    config = parser.parse_args()
-
-    if config.method is not None:
-        method_to_call = globals()[config.method]
-        method_to_call(config)
-    elif config.action == EXTRACT:
-        extract_matches(config)
-    elif config.action == CHECK:
-        if config.match_id is not None:
-            check_single_match(config)
-        else:
-            check_all_matches(config)
-    elif config.action == PROCESS:
-        if config.match_id is not None:
-            process_single_match(config)
-        else:
-            preprocessing_complete(config)
-    elif config.action == ALL:
-        extract_matches(config)
-        check_all_matches(config)
-        preprocessing_complete(config)
-
-
-def get_minute_of_card(event):
-
-    minute = event['minute']
-    if minute == 90:
-        extra_minute = event['extra_minute']
-        if extra_minute is not None:
-            minute = minute + extra_minute
-
-    return minute-1
 
 
 def process_odds(config):
@@ -751,6 +702,57 @@ def process_odds(config):
             requests = list()
 
     save_db(requests, config)
+
+
+def main():
+
+    parser = ArgumentParser()
+
+    parser.add_argument("-a", "--action", dest="action", choices=[EXTRACT, CHECK, PROCESS, ALL],
+                        help="1- extract | 2- single | 3- final ", type=int)
+
+    parser.add_argument("-d", "--drop", action="store_true", dest="drop", default=False,
+                        help="drop the collection of matches")
+
+    parser.add_argument("-s", "--save", action="store_true", dest="save", default=False,
+                        help="save the changes in the database")
+
+    parser.add_argument("-m", "--match", dest="match_id",
+                        help="inform a valid match ID ", type=int)
+
+    parser.add_argument("-l", "--limit", dest="limit",
+                        help="inform a number of matches", type=int)
+
+    parser.add_argument("-b", "--bulk_size", dest="bulk_size", default=1000,
+                        help="the bulk size to save in the database", type=int)
+
+    parser.add_argument("-k", "--method", dest="method",
+                        help="invoke a method by name")
+
+    parser.add_argument("-i", "--skip", dest="skip", default=0,
+                        help="the number of matches to skip", type=int)
+
+    config = parser.parse_args()
+
+    if config.method is not None:
+        method_to_call = globals()[config.method]
+        method_to_call(config)
+    elif config.action == EXTRACT:
+        extract_matches(config)
+    elif config.action == CHECK:
+        if config.match_id is not None:
+            check_match_by_id(config)
+        else:
+            check_all_matches(config)
+    elif config.action == PROCESS:
+        if config.match_id is not None:
+            process_match_by_id(config)
+        else:
+            process_matches(config)
+    elif config.action == ALL:
+        extract_matches(config)
+        check_all_matches(config)
+        process_matches(config)
 
 
 if __name__ == "__main__":
