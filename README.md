@@ -9,7 +9,7 @@ Without Odds:
 https://datahub.io/igormago/football_without_odds/v/1
 
 With Odds:
-https://datahub.io/igormago/football_with_odds/v/1
+https://archive.org/details/selected_v_trans_final
 
 **-- MODELS --**
 
