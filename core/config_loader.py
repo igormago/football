@@ -12,11 +12,11 @@ def get_parser():
     file_path = os.path.dirname(os.path.abspath(__file__))
     file_conf = os.path.join(file_path, 'config.ini')
     parser.read(file_conf)
-    print("entrou")
+
     return parser
 
 
-class Config:
+class SysConfig:
     """Interact with configuration variables."""
 
     parser = get_parser()
@@ -34,8 +34,8 @@ class Config:
 
 class Database:
     """Interact with configuration variables."""
-    sm_session = MongoClient(host=Config.database('mongo_host'),
-                             port=int(Config.database('mongo_port'))).get_database('sportmonks')
+    sm_session = MongoClient(host=SysConfig.database('mongo_host'),
+                             port=int(SysConfig.database('mongo_port'))).get_database('sportmonks')
 
     @classmethod
     def get_session_sportmonks(cls):

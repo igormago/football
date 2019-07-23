@@ -6,6 +6,8 @@ from core.logger import logging, log_in_out
 import numpy as np
 import pandas as pd
 import json
+import sys
+import math
 from core.config_loader import Database
 
 session = Database.get_session_sportmonks()
@@ -20,7 +22,7 @@ ALL = 4
 
 SELECTED = 'selected'
 STATUS_ERROR = 'status_error'
-COL_MATCHES = 'm_matches'
+COL_MATCHES = 'matches'
 COL_FIXTURES = 'fixtures'
 
 
@@ -99,9 +101,9 @@ def get_columns(stats_list):
 def get_matches(config):
 
     if config.limit is None:
-        matches = session.get_collection(COL_MATCHES).find({'selected': True}).skip(config.skip)
+        matches = session.get_collection(COL_MATCHES).find({'selected': True}, no_cursor_timeout=True).skip(config.skip)
     else:
-        matches = session.get_collection(COL_MATCHES).find({'selected': True}).skip(config.skip).limit(config.limit)
+        matches = session.get_collection(COL_MATCHES).find({'selected': True}, no_cursor_timeout=True).skip(config.skip).limit(config.limit)
     return matches
 
 
@@ -662,7 +664,9 @@ def process_odds(config):
                     field = '_'.join(([tp, method, label]))
                     odds_summary[field] = get_summary_by_column()
 
-        if odds_summary['o_mean_home'] <= 1 or odds_summary['o_mean_draw'] <= 1 or odds_summary['o_mean_away'] <= 1:
+        if (math.isnan(odds_summary['o_mean_home']) or odds_summary['o_mean_home'] < 1) or \
+                (math.isnan(odds_summary['o_mean_draw']) or odds_summary['o_mean_draw'] < 1) or \
+                (math.isnan(odds_summary['o_mean_away']) or odds_summary['o_mean_away'] < 1):
 
             logger.debug('[%i] Exception in odds values of Match: %i ' % (idx, m['id']))
             update['with_odds'] = False
@@ -692,8 +696,9 @@ def process_odds(config):
                 field_fav = '_'.join(([tp, method, 'fav']))
                 odds_summary[field_fav] = odds_summary[field]
 
-        update['odds'] = odds_summary
         update['with_odds'] = True
+        update['odds'] = odds_summary
+
         requests.append(UpdateOne({'_id': m['_id']}, {'$set': update}))
 
         if is_to_submit(idx, config.bulk_size):
@@ -735,7 +740,7 @@ def main():
     config = parser.parse_args()
 
     if config.method is not None:
-        method_to_call = globals()[config.method]
+        method_to_call = getattr(sys.modules[__name__], config.method)
         method_to_call(config)
     elif config.action == EXTRACT:
         extract_matches(config)

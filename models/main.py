@@ -1,33 +1,25 @@
-from argparse import ArgumentParser
+import sys
+path_project = "/home/igorcosta/football/"
+sys.path.insert(1, path_project)  # to Slurm
 
-from prediction import training
+from core.logger import log_in_out
+from models import utils
+from models.Dataset import Dataset
+from models.Model import Model
 
-TUNING = 1
-TRAINING = 2
-TESTING = 3
+from core.logger import log_in_out, logging
+logger = logging.getLogger('Main')
 
 
+@log_in_out
 def main():
 
-    parser = ArgumentParser()
-    parser.add_argument("-c", "--classifier", dest="classifier",
-                        help="inform the name of classifier")
-
-    parser.add_argument("-a", "--action", dest="action", choices=[TUNING, TRAINING, TESTING],
-                        help="1- tuning | 2- training | 3 = test ", type=int)
-
-    parser.add_argument("-q", "--quiet",
-                        action="store_false", dest="verbose", default=True,
-                        help="don't print status messages to stdout")
-
-    config = parser.parse_args()
-
-    if config.action == TUNING:
-        training.run(config)
-    elif config.action == TRAINING:
-        pass
-    elif config.action == TESTING:
-        print("entrou")
+    setup = utils.get_setup()
+    logger.info("Setup: " + str(setup))
+    data = Dataset(setup)
+    model = Model(setup)
+    model.train(data)
+    model.test(data)
 
 
 if __name__ == "__main__":

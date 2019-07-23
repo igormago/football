@@ -3,7 +3,7 @@ import logging
 # set up logging to file - see previous section for more details
 logging.basicConfig(level=logging.DEBUG,
                     format='%(asctime)s %(name)-12s %(levelname)-8s %(message)s',
-                    datefmt='%Y-%m-%d %H:%M')
+                    datefmt='%Y-%m-%d %H:%M:%S')
 # define a Handler which writes INFO messages or higher to the sys.stderr
 console = logging.StreamHandler()
 console.setLevel(logging.DEBUG)
@@ -15,13 +15,16 @@ console.setFormatter(formatter)
 # Now, define a couple of other loggers which might represent areas in your
 # application:
 
+logger = logging.getLogger('logging')
+
 
 def log_in_out(func):
 
     def decorated_func(*args, **kwargs):
-        print("Begin:  ", func.__name__)
+        ref = func.__module__ + '.' + func.__name__ + '()'
+        logger.info("Begin:  " + ref)
         result = func(*args, **kwargs)
-        print("End:  ", func.__name__)
+        logger.info("End:  " + ref)
         return result
 
     return decorated_func

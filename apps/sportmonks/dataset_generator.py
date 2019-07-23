@@ -3,10 +3,12 @@ import shutil
 import pandas as pd
 import pymongo
 
+from core.logger import logging, log_in_out
 from pandas.io.json import json_normalize
 from argparse import ArgumentParser
-from core.config_loader import Config, Database
+from core.config_loader import SysConfig, Database
 
+logger = logging.getLogger('dataset_generator')
 session = Database.get_session_sportmonks()
 
 ALL = 0
@@ -22,7 +24,7 @@ def create_partial_frames(config, selection, projection):
     idx_to = 0
     num_matches = session.get_collection('matches').count_documents(selection)
 
-    dataset_dir = os.path.join(Config.path('datasets'), config.dataset_id)
+    dataset_dir = os.path.join(SysConfig.path('datasets'), config.dataset_id)
     partial_dir = os.path.join(dataset_dir, 'partial')
 
     if not os.path.exists(dataset_dir):
@@ -53,9 +55,10 @@ def create_partial_frames(config, selection, projection):
         idx_file += 1
 
 
+@log_in_out
 def create_single_dataframe(config):
 
-    partial_dir = os.path.join(Config.path('datasets'), config.dataset_id, 'partial')
+    partial_dir = os.path.join(SysConfig.path('datasets'), config.dataset_id, 'partial')
     files = sorted(os.listdir(partial_dir))
 
     print('Concatenating file %s' % files[0])
@@ -69,30 +72,88 @@ def create_single_dataframe(config):
         df_temp = pd.read_csv(file_path)
         df = pd.concat([df, df_temp], sort=True)
 
-    df_file_name = 'a.csv'
-    df_file_path = os.path.join(Config.path('datasets'), config.dataset_id, df_file_name)
+    df_file_name = 'single.csv'
+    df_file_path = os.path.join(SysConfig.path('datasets'), config.dataset_id, df_file_name)
     df.to_csv(df_file_path)
 
 
+@log_in_out
 def create_final_dataframe(config):
 
-    file_path = os.path.join(Config.path('datasets'), config.dataset_id, 'df_single.csv')
+    if not config.transform:
+        file_path = os.path.join(SysConfig.path('datasets'), config.dataset_id, 'single.csv')
+        df = pd.read_csv(file_path)
+
+        features = list()
+        if 'sm_accum_odds' in config.dataset_id:
+            features = process_accum(df)
+
+        df = df[features]
+
+        df_file_path = os.path.join(SysConfig.path('datasets'), config.dataset_id, 'final.csv')
+        df.to_csv(df_file_path)
+    else:
+        transform_minutes_into_feature(config)
+
+
+@log_in_out
+def transform_minutes_into_feature(config):
+
+    file_path = os.path.join(SysConfig.path('datasets'), config.dataset_id, 'final.csv')
     df = pd.read_csv(file_path)
 
-    features = list()
-    if 'sm_counter_odds' in config.dataset_id:
-        features = process_counter(df)
+    features_basic = ['id', 'minute_max', 'date', 'observed_away', 'observed_draw', 'observed_home', 'result']
+    features_odds = ['odds_p_mean_home', 'odds_p_mean_draw', 'odds_p_mean_away',
+                     'odds_p_std_home', 'odds_p_std_draw', 'odds_p_std_away']
 
-    df = df[features]
+    features_trends = ['goals', 'corners', 'on_target', 'off_target', 'attacks', 'dangerous_attacks']
+    features_cards = ['yellow_cards', 'red_cards']
+    features_ratio = ['possession']
 
-    df_file_name = 'df_final.csv'
-    df_file_path = os.path.join(Config.path('datasets'), config.dataset_id, df_file_name)
-    df.to_csv(df_file_path)
+    locales = ['home', 'away']
+
+    features_columns = []
+
+    group = 'accum_trends'
+    for feature in features_trends:
+        for l in locales:
+            col = '_'.join([group, feature, l])
+            features_columns.append(col)
+
+    group = 'accum_cards'
+    for feature in features_cards:
+        for l in locales:
+            col = '_'.join([group, feature, l])
+            features_columns.append(col)
+
+    group = 'ratio_trends'
+    for feature in features_ratio:
+        col = '_'.join([group, feature])
+        features_columns.append(col)
+
+    df_new = pd.DataFrame()
+    for i in range(96):
+        logger.debug("Extracting minute %i" % i)
+        features_columns_by_minute = ['_'.join([a, str(i)]) for a in features_columns]
+        df_partial = df[features_basic + features_odds + features_columns_by_minute]
+        df_partial.columns = features_basic + features_odds + features_columns
+        df_partial.loc[:, 'minute'] = i
+        df_new = pd.concat([df_new, df_partial]).sort_index(kind='merge')
+
+    config.dataset_id = '_'.join([config.dataset_id, 'min'])
+    dataset_dir = os.path.join(SysConfig.path('datasets'), config.dataset_id)
+
+    if not os.path.exists(dataset_dir):
+        os.mkdir(dataset_dir)
+
+    df_file_path = os.path.join(dataset_dir, 'final.csv')
+    df_new.to_csv(df_file_path)
 
 
+@log_in_out
 def get_selection_projection(config):
 
-    selection_with_odds = {'selected': 1, 'odds': {'$exists': 1}}
+    selection_with_odds = {'selected': True, 'with_odds': True, 'minute_max': {'$gt': 89, '$lt': 96}}
     selection_without_odds = {'selected': 1}
 
     if config.dataset_id == 'sm_counter':
@@ -107,17 +168,17 @@ def get_selection_projection(config):
 
         return selection_without_odds, projection
 
-    elif config.dataset_id == 'sm_counter_odds':
+    elif config.dataset_id == 'sm_accum_odds':
 
-        projection = {'observed': 1, 'date': 1, 'result': 1, 'counter_trends': 1, 'counter_cards': 1,
-                      'possession': 1, 'odds': 1}
+        projection = {'id': 1, 'minute_max': 1, 'observed': 1, 'date': 1, 'result': 1, 'accum_trends': 1, 'accum_cards': 1,
+                      'ratio_trends': 1, 'odds': 1}
 
         return selection_with_odds, projection
 
 
-def process_counter(df):
+def process_accum(df):
 
-    def preprocessing_dataframe():
+    def processing_by_local():
 
         for i in range(0, 95):
             for feature in subgroups:
@@ -130,28 +191,38 @@ def process_counter(df):
                     if i == 94:
                         features.append(next_col)
 
-    features_basic = ['date', 'observed_away', 'observed_draw', 'observed_home', 'result']
-    features_odds = ['odds_p_avg_home', 'odds_p_avg_draw', 'odds_p_avg_away',
+    def processing():
+
+        for i in range(0, 95):
+            for feature in subgroups:
+
+                    col = '_'.join([group, feature, str(i)])
+                    next_col = '_'.join([group, feature, str(i + 1)])
+                    df[next_col].fillna(df[col], inplace=True)
+                    features.append(col)
+                    if i == 94:
+                        features.append(next_col)
+
+    features_basic = ['id', 'minute_max', 'date', 'observed_away', 'observed_draw', 'observed_home', 'result']
+    features_odds = ['odds_p_mean_home', 'odds_p_mean_draw', 'odds_p_mean_away',
                      'odds_p_std_home', 'odds_p_std_draw', 'odds_p_std_away']
     features = features_basic + features_odds
-    print(features)
 
-    print('Transforming: cards')
+    logger.debug('Transforming: cards')
     group = 'accum_cards'
     subgroups = ['yellow_cards', 'red_cards']
     locales = ['home', 'away']
-    preprocessing_dataframe()
+    processing_by_local()
 
-    print('Transforming: trends')
+    logger.debug('Transforming: trends')
     group = 'accum_trends'
     subgroups = ['goals', 'corners', 'on_target', 'off_target', 'attacks', 'dangerous_attacks']
-    preprocessing_dataframe()
+    processing_by_local()
 
-    print('Transforming: ball possession')
-    group = 'ratio_ball_possession'
+    logger.debug('Transforming: ball possession')
+    group = 'ratio_trends'
     subgroups = ['possession']
-    preprocessing_dataframe()
-
+    processing()
     return features
 
 
@@ -170,6 +241,9 @@ def main():
 
     parser.add_argument("-a", "--action", dest="action", choices=[PARTIAL, SINGLE, FINAL, ALL],
                         help="1- partial | 2- single | 3- final | 0- all steps ", type=int)
+
+    parser.add_argument("-t", "--transform", action="store_true", dest="transform", default=False,
+                        help="inform to transform minutes in feature")
 
     config = parser.parse_args()
 
