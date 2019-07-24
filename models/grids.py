@@ -22,7 +22,6 @@ def xgb_step1():
 
 def lr_step_1():
 
-    params = dict(penalty=['l2'],
-                  C=[0.001, 0.01, 0.1, 1, 10, 100])
+    params = dict(C=[0.001, 0.01, 0.1, 1, 10, 100])
 
     return params

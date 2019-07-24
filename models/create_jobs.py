@@ -6,6 +6,34 @@ from core.config_loader import SysConfig
 def main():
 
     setup = Setup.load()
+
+    if setup.dataset_id is None:
+
+        for tf in [True, False]:
+            setup.is_minute_feature = tf
+
+            setup.dataset_id = 'sm_cum_odds'
+            setup.features = 'cum_scouts'
+            create_file(setup)
+
+            setup.dataset_id = 'sm_cum_odds'
+            setup.features = 'cum_goals'
+            create_file(setup)
+
+            setup.dataset_id = 'sm_comp_odds'
+            setup.features = 'comp_scouts'
+            create_file(setup)
+
+            setup.dataset_id = 'sm_comp_odds'
+            setup.features = 'comp_goals'
+            create_file(setup)
+
+    else:
+        create_file(setup)
+
+
+def create_file(setup):
+
     commands = list()
 
     if setup.is_minute_feature:
@@ -31,7 +59,6 @@ def main():
 
     jobs_dir = SysConfig.path('jobs')
     job_file = os.path.join(jobs_dir, job_filename)
-
     with open(job_file, 'w') as outfile:
         outfile.write('#!/usr/bin/env bash')
         outfile.write('\n')

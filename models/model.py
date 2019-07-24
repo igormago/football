@@ -4,7 +4,7 @@ import joblib
 import pandas as pd
 from sklearn.model_selection import GridSearchCV, RandomizedSearchCV
 
-from models import  scores
+from models import scores
 import models.grids as gp
 from sklearn.ensemble import RandomForestClassifier
 from sklearn.linear_model import LogisticRegression
