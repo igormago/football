@@ -4,7 +4,7 @@ import joblib
 import pandas as pd
 from sklearn.model_selection import GridSearchCV, RandomizedSearchCV
 
-from models import utils, scores
+from models import  scores
 import models.grids as gp
 from sklearn.ensemble import RandomForestClassifier
 from sklearn.linear_model import LogisticRegression
@@ -17,6 +17,17 @@ from core.config_loader import SysConfig
 
 from core.logger import log_in_out, logging
 logger = logging.getLogger('Model')
+
+
+class ModelFactory:
+
+    @staticmethod
+    def load(setup):
+
+        if setup.is_minute_feature:
+            return ModelSingle(setup)
+        else:
+            return ModelByMinute(setup)
 
 
 class Model:
@@ -68,28 +79,14 @@ class Model:
             params = self._get_grid_params()
             grid = self._get_grid(params)
             grid.fit(data.x_train, data.y_train)
-
-            self._save_model(grid.best_estimator_)
+            self.classifier = grid.best_estimator_
             self._save_cv_results(grid)
 
         else:
             logger.debug('Training model')
             self.classifier.fit(data.x_train, data.y_train)
-            self._save_model(self.classifier)
 
-    @log_in_out
-    def test(self, data):
-
-        if not self.setup.is_minute_feature:
-            logger.debug('Evaluating model')
-            acc_train, acc_test, rps_train, rps_test = self._get_scores(data)
-            self._save_results(acc_train, acc_test, rps_train, rps_test, self.setup.minute)
-        else:
-            for minute in range(96):
-                logger.debug('Evaluating motel at minute %i' % minute)
-                data.reset_train_test_by_minute(minute)
-                acc_train, acc_test, rps_train, rps_test = self._get_scores(data)
-                self._save_results(acc_train, acc_test, rps_train, rps_test, minute)
+        self._save_model(self.classifier)
 
     def _get_grid(self, params):
 
@@ -174,3 +171,31 @@ class Model:
         rps_test = scores.rps(y_test_prob, y_hat_test_prob)
 
         return acc_train, acc_test, rps_train, rps_test
+
+
+class ModelByMinute(Model):
+
+    def __init__(self, setup):
+        super().__init__(setup)
+
+    @log_in_out
+    def test(self, data):
+
+        logger.debug('Evaluating model')
+        acc_train, acc_test, rps_train, rps_test = self._get_scores(data)
+        self._save_results(acc_train, acc_test, rps_train, rps_test, self.setup.minute)
+
+
+class ModelSingle(Model):
+
+    def __init__(self, setup):
+        super().__init__(setup)
+
+    @log_in_out
+    def test(self, data):
+
+        for minute in range(96):
+            logger.debug('Evaluating motel at minute %i' % minute)
+            data.filter_train_test_by_minute(minute)
+            acc_train, acc_test, rps_train, rps_test = self._get_scores(data)
+            self._save_results(acc_train, acc_test, rps_train, rps_test, minute)

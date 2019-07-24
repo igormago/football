@@ -1,44 +1,52 @@
 import os
-from models import utils
+from models.setup import Setup
 from core.config_loader import SysConfig
 
 
 def main():
 
-    setup = utils.get_setup()
+    setup = Setup.load()
     commands = list()
-
-    for minute in range(setup.minute):
-
-        label = '_'.join([setup.classifier, str(minute), setup.dataset_id, setup.features])
-
-        command = 'sbatch --job-name ' + label
-        command += ' --output logs/%j-' + label + '.out'
-        command += ' --error logs/%j-' + label + '.err'
-        command += ' ./standard/' + setup.virtualenv + '.sh'
-
-        command = add_default_parameters(setup, command)
-
-        command += ' -t ' + str(minute)
-        commands.append(command)
 
     if setup.is_minute_feature:
 
-        command = ''
+        job_filename = '_'.join([setup.classifier, setup.virtualenv, setup.dataset_id, setup.features, 'ALL.sh'])
+        label = '_'.join([setup.classifier, '0', setup.dataset_id, setup.features])
+        command = get_prefix_command(label, setup)
         command = add_default_parameters(setup, command)
         command += ' -tf '
         commands.append(command)
 
+    else:
+
+        job_filename = '_'.join([setup.classifier, setup.virtualenv, setup.dataset_id, setup.features, 'MIN.sh'])
+        for minute in range(setup.minute):
+            label = '_'.join([setup.classifier, str(minute), setup.dataset_id, setup.features])
+
+            command = get_prefix_command(label, setup)
+            command = add_default_parameters(setup, command)
+
+            command += ' -t ' + str(minute)
+            commands.append(command)
+
     jobs_dir = SysConfig.path('jobs')
-    job_filename = '_'.join([setup.classifier, setup.dataset_id, setup.features, '.sh'])
     job_file = os.path.join(jobs_dir, job_filename)
 
     with open(job_file, 'w') as outfile:
+        outfile.write('#!/usr/bin/env bash')
+        outfile.write('\n')
         for c in commands:
             outfile.write(c)
             outfile.write('\n')
 
-    print(commands)
+
+def get_prefix_command(label, setup):
+
+    command = 'sbatch --job-name ' + label
+    command += ' --output logs/%j-' + label + '.out'
+    command += ' --error logs/%j-' + label + '.err'
+    command += ' ./standard/' + setup.virtualenv + '.sh '
+    return command
 
 
 def add_default_parameters(config, command):
