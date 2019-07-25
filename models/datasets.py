@@ -151,12 +151,12 @@ class DatasetWithMinute(Dataset):
         features = list()
 
         for t in self._list_features_trends:
-            for l in self._list_comparatives:
+            for l in self._list_locales:
                 col = '_'.join(['accum_trends', t, l])
                 features.append(col)
 
         for t in self._list_features_cards:
-            for l in self._list_comparatives:
+            for l in self._list_locales:
                 col = '_'.join(['accum_cards', t, l])
                 features.append(col)
 

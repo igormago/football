@@ -1,6 +1,6 @@
 import sys
 path_project = "/home/igorcosta/football/"
-sys.path.insert(1, path_project)  # to Slurm
+sys.path.insert(1, path_project)  # workaround for Slurm
 
 from models.setup import Setup
 from models.datasets import DatasetFactory
