@@ -1,0 +1,15 @@
+DataBase.getCollection('matches').find({'HIT':{'$exists':1}},{'HIT':1})
+
+DataBase.matches.aggregate(
+    {"$group" : {_id:"$CHAMP.NM", count:{$sum:1} } }
+)
+
+DataBase.matches.aggregate(
+    {"$match" : {'HIT.BTS_FAV':1}
+    {"$group" : {_id:"$CHAMP.NM", count:{$sum:1} } }
+)
+
+DataBase.matches.aggregate(
+    {"$match" : {'HIT.BTS_FAV':1}},
+    {"$group" : {_id:"$CHAMP.NM", count:{$sum:1} } }
+)

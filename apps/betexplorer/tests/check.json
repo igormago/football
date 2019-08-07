@@ -1,0 +1,984 @@
+[
+  {
+    'mcg': 0,
+    'gf': 0,
+    'd': 0,
+    'mp': 0,
+    'l': 0,
+    'w': 0,
+    'msg': 0,
+    'ss': ObjectId(
+    '5ac8e5df85f7f64d4be5cca5'
+    ),
+    'tm': 'Corinthians',
+    'pt': 0,
+    'lmn': 0,
+    'nm': ObjectId(
+    '5acb724985f7f61006ae13a8'
+    ),
+    'ga': 0,
+    'loc': 'h'
+  },
+  {
+    'mcg': 0,
+    'gf': 3,
+    'd': 0,
+    'l': 0,
+    'w': 1,
+    'pt': 3,
+    'pr': {
+      '1x2': {
+        'v': 0.5336,
+        'c': 1
+      }
+    },
+    'msg': 1,
+    'ss': ObjectId(
+    '5ac8e5df85f7f64d4be5cca5'
+    ),
+    'mp': 1,
+    'tm': 'Corinthians',
+    'lmn': 1,
+    'nm': ObjectId(
+    '5acb724985f7f61006ae13a2'
+    ),
+    'ga': 0,
+    'loc': 'h'
+  },
+  {
+    'tm': 'Corinthians',
+    'mcg': 0,
+    'gf': 3,
+    'mp': 1,
+    'pt': 3,
+    'l': 0,
+    'w': 1,
+    'msg': 1,
+    'ss': ObjectId(
+    '5ac8e5df85f7f64d4be5cca5'
+    ),
+    'd': 0,
+    'pr': {
+      '1x2': {
+        'v': 0.5336,
+        'c': 1
+      }
+    },
+    'lmn': 1,
+    'nm': ObjectId(
+    '5acb724985f7f61006ae1396'
+    ),
+    'ga': 0,
+    'loc': 'h'
+  },
+  {
+    'tm': 'Corinthians',
+    'mcg': 1,
+    'gf': 4,
+    'mp': 2,
+    'd': 0,
+    'l': 1,
+    'w': 1,
+    'msg': 2,
+    'ss': ObjectId(
+    '5ac8e5df85f7f64d4be5cca5'
+    ),
+    'pt': 3,
+    'pr': {
+      '1x2': {
+        'v': 0.9032,
+        'c': 2
+      }
+    },
+    'lmn': 2,
+    'nm': ObjectId(
+    '5acb724985f7f61006ae1388'
+    ),
+    'ga': 3,
+    'loc': 'h'
+  },
+  {
+    'tm': 'Corinthians',
+    'mcg': 1,
+    'gf': 4,
+    'mp': 2,
+    'l': 1,
+    'w': 1,
+    'pt': 3,
+    'msg': 2,
+    'ss': ObjectId(
+    '5ac8e5df85f7f64d4be5cca5'
+    ),
+    'd': 0,
+    'pr': {
+      '1x2': {
+        'v': 0.9032,
+        'c': 2
+      }
+    },
+    'lmn': 2,
+    'nm': ObjectId(
+    '5acb724985f7f61006ae1382'
+    ),
+    'ga': 3,
+    'loc': 'h'
+  },
+  {
+    'tm': 'Corinthians',
+    'mcg': 1,
+    'gf': 4,
+    'd': 0,
+    'l': 1,
+    'w': 1,
+    'pt': 3,
+    'msg': 2,
+    'ss': ObjectId(
+    '5ac8e5df85f7f64d4be5cca5'
+    ),
+    'mp': 2,
+    'pr': {
+      '1x2': {
+        'v': 0.9032,
+        'c': 2
+      }
+    },
+    'lmn': 2,
+    'nm': ObjectId(
+    '5acb724985f7f61006ae1378'
+    ),
+    'ga': 3,
+    'loc': 'h'
+  },
+  {
+    'tm': 'Corinthians',
+    'mcg': 2,
+    'gf': 4,
+    'mp': 3,
+    'l': 2,
+    'w': 1,
+    'pt': 3,
+    'msg': 2,
+    'ss': ObjectId(
+    '5ac8e5df85f7f64d4be5cca5'
+    ),
+    'd': 0,
+    'pr': {
+      '1x2': {
+        'v': 1.3084,
+        'c': 3
+      }
+    },
+    'lmn': 3,
+    'nm': ObjectId(
+    '5acb724985f7f61006ae136a'
+    ),
+    'ga': 4,
+    'loc': 'h'
+  },
+  {
+    'tm': 'Corinthians',
+    'mcg': 2,
+    'gf': 4,
+    'd': 0,
+    'l': 2,
+    'w': 1,
+    'pt': 3,
+    'msg': 2,
+    'ss': ObjectId(
+    '5ac8e5df85f7f64d4be5cca5'
+    ),
+    'mp': 3,
+    'pr': {
+      '1x2': {
+        'v': 1.3084,
+        'c': 3
+      }
+    },
+    'lmn': 3,
+    'nm': ObjectId(
+    '5acb724985f7f61006ae1364'
+    ),
+    'ga': 4,
+    'loc': 'h'
+  },
+  {
+    'tm': 'Corinthians',
+    'mcg': 3,
+    'gf': 4,
+    'mp': 4,
+    'l': 3,
+    'w': 1,
+    'pt': 3,
+    'msg': 2,
+    'ss': ObjectId(
+    '5ac8e5df85f7f64d4be5cca5'
+    ),
+    'd': 0,
+    'pr': {
+      '1x2': {
+        'v': 1.7775,
+        'c': 4
+      }
+    },
+    'lmn': 4,
+    'nm': ObjectId(
+    '5acb724985f7f61006ae1356'
+    ),
+    'ga': 5,
+    'loc': 'h'
+  },
+  {
+    'tm': 'Corinthians',
+    'mcg': 4,
+    'gf': 4,
+    'd': 0,
+    'l': 4,
+    'w': 1,
+    'pt': 3,
+    'msg': 2,
+    'ss': ObjectId(
+    '5ac8e5df85f7f64d4be5cca5'
+    ),
+    'mp': 5,
+    'pr': {
+      '1x2': {
+        'v': 2.2968,
+        'c': 5
+      }
+    },
+    'lmn': 5,
+    'nm': ObjectId(
+    '5acb724985f7f61006ae134c'
+    ),
+    'ga': 7,
+    'loc': 'h'
+  },
+  {
+    'tm': 'Corinthians',
+    'mcg': 4,
+    'gf': 4,
+    'mp': 5,
+    'l': 4,
+    'w': 1,
+    'pt': 3,
+    'msg': 2,
+    'ss': ObjectId(
+    '5ac8e5df85f7f64d4be5cca5'
+    ),
+    'd': 0,
+    'pr': {
+      '1x2': {
+        'v': 2.2968,
+        'c': 5
+      }
+    },
+    'lmn': 5,
+    'nm': ObjectId(
+    '5acb724985f7f61006ae1345'
+    ),
+    'ga': 7,
+    'loc': 'h'
+  },
+  {
+    'tm': 'Corinthians',
+    'mcg': 4,
+    'gf': 4,
+    'd': 0,
+    'l': 4,
+    'w': 1,
+    'pt': 3,
+    'msg': 2,
+    'ss': ObjectId(
+    '5ac8e5df85f7f64d4be5cca5'
+    ),
+    'mp': 5,
+    'pr': {
+      '1x2': {
+        'v': 2.2968,
+        'c': 5
+      }
+    },
+    'lmn': 5,
+    'nm': ObjectId(
+    '5acb724985f7f61006ae133c'
+    ),
+    'ga': 7,
+    'loc': 'h'
+  },
+  {
+    'tm': 'Corinthians',
+    'mcg': 5,
+    'gf': 6,
+    'mp': 6,
+    'l': 4,
+    'w': 1,
+    'pt': 4,
+    'msg': 3,
+    'ss': ObjectId(
+    '5ac8e5df85f7f64d4be5cca5'
+    ),
+    'd': 1,
+    'pr': {
+      '1x2': {
+        'v': 2.8888000000000003,
+        'c': 6
+      }
+    },
+    'lmn': 6,
+    'nm': ObjectId(
+    '5acb724985f7f61006ae1333'
+    ),
+    'ga': 9,
+    'loc': 'h'
+  },
+  {
+    'tm': 'Corinthians',
+    'mcg': 5,
+    'gf': 6,
+    'd': 1,
+    'l': 4,
+    'w': 1,
+    'pt': 4,
+    'msg': 3,
+    'ss': ObjectId(
+    '5ac8e5df85f7f64d4be5cca5'
+    ),
+    'mp': 6,
+    'pr': {
+      '1x2': {
+        'v': 2.8888000000000003,
+        'c': 6
+      }
+    },
+    'lmn': 6,
+    'nm': ObjectId(
+    '5acb724985f7f61006ae1327'
+    ),
+    'ga': 9,
+    'loc': 'h'
+  },
+  {
+    'tm': 'Corinthians',
+    'mcg': 6,
+    'gf': 8,
+    'mp': 7,
+    'l': 4,
+    'w': 2,
+    'pt': 7,
+    'msg': 4,
+    'ss': ObjectId(
+    '5ac8e5df85f7f64d4be5cca5'
+    ),
+    'd': 1,
+    'pr': {
+      '1x2': {
+        'v': 3.4002000000000003,
+        'c': 7
+      }
+    },
+    'lmn': 7,
+    'nm': ObjectId(
+    '5acb724985f7f61006ae131f'
+    ),
+    'ga': 10,
+    'loc': 'h'
+  },
+  {
+    'tm': 'Corinthians',
+    'mcg': 7,
+    'gf': 9,
+    'd': 1,
+    'l': 5,
+    'w': 2,
+    'pt': 7,
+    'msg': 5,
+    'ss': ObjectId(
+    '5ac8e5df85f7f64d4be5cca5'
+    ),
+    'mp': 8,
+    'pr': {
+      '1x2': {
+        'v': 3.9114000000000004,
+        'c': 8
+      }
+    },
+    'lmn': 8,
+    'nm': ObjectId(
+    '5acb724985f7f61006ae1315'
+    ),
+    'ga': 13,
+    'loc': 'h'
+  },
+  {
+    'tm': 'Corinthians',
+    'mcg': 7,
+    'gf': 9,
+    'mp': 8,
+    'l': 5,
+    'w': 2,
+    'pt': 7,
+    'msg': 5,
+    'ss': ObjectId(
+    '5ac8e5df85f7f64d4be5cca5'
+    ),
+    'd': 1,
+    'pr': {
+      '1x2': {
+        'v': 3.9114000000000004,
+        'c': 8
+      }
+    },
+    'lmn': 8,
+    'nm': ObjectId(
+    '5acb724985f7f61006ae130a'
+    ),
+    'ga': 13,
+    'loc': 'h'
+  },
+  {
+    'tm': 'Corinthians',
+    'mcg': 7,
+    'gf': 10,
+    'd': 1,
+    'l': 5,
+    'w': 3,
+    'pt': 10,
+    'msg': 6,
+    'ss': ObjectId(
+    '5ac8e5df85f7f64d4be5cca5'
+    ),
+    'mp': 9,
+    'pr': {
+      '1x2': {
+        'v': 4.4838000000000005,
+        'c': 9
+      }
+    },
+    'lmn': 9,
+    'nm': ObjectId(
+    '5acb724985f7f61006ae12fd'
+    ),
+    'ga': 13,
+    'loc': 'h'
+  },
+  {
+    'tm': 'Corinthians',
+    'mcg': 7,
+    'gf': 10,
+    'mp': 9,
+    'l': 5,
+    'w': 3,
+    'pt': 10,
+    'msg': 6,
+    'ss': ObjectId(
+    '5ac8e5df85f7f64d4be5cca5'
+    ),
+    'd': 1,
+    'pr': {
+      '1x2': {
+        'v': 4.4838000000000005,
+        'c': 9
+      }
+    },
+    'lmn': 9,
+    'nm': ObjectId(
+    '5acb724985f7f61006ae12f9'
+    ),
+    'ga': 13,
+    'loc': 'h'
+  },
+  {
+    'tm': 'Corinthians',
+    'mcg': 8,
+    'gf': 10,
+    'd': 1,
+    'l': 6,
+    'w': 3,
+    'pt': 10,
+    'msg': 6,
+    'ss': ObjectId(
+    '5ac8e5df85f7f64d4be5cca5'
+    ),
+    'mp': 10,
+    'pr': {
+      '1x2': {
+        'v': 4.9793,
+        'c': 10
+      }
+    },
+    'lmn': 10,
+    'nm': ObjectId(
+    '5acb724985f7f61006ae12e9'
+    ),
+    'ga': 15,
+    'loc': 'h'
+  },
+  {
+    'tm': 'Corinthians',
+    'mcg': 8,
+    'gf': 10,
+    'mp': 10,
+    'l': 6,
+    'w': 3,
+    'pt': 10,
+    'msg': 6,
+    'ss': ObjectId(
+    '5ac8e5df85f7f64d4be5cca5'
+    ),
+    'd': 1,
+    'pr': {
+      '1x2': {
+        'v': 4.9793,
+        'c': 10
+      }
+    },
+    'lmn': 10,
+    'nm': ObjectId(
+    '5acb724985f7f61006ae12e8'
+    ),
+    'ga': 15,
+    'loc': 'h'
+  },
+  {
+    'tm': 'Corinthians',
+    'mcg': 8,
+    'gf': 11,
+    'd': 1,
+    'l': 6,
+    'w': 4,
+    'pt': 13,
+    'msg': 7,
+    'ss': ObjectId(
+    '5ac8e5df85f7f64d4be5cca5'
+    ),
+    'mp': 11,
+    'pr': {
+      '1x2': {
+        'v': 5.5803,
+        'c': 11
+      }
+    },
+    'lmn': 11,
+    'nm': ObjectId(
+    '5acb724985f7f61006ae12d6'
+    ),
+    'ga': 15,
+    'loc': 'h'
+  },
+  {
+    'tm': 'Corinthians',
+    'mcg': 8,
+    'gf': 11,
+    'mp': 11,
+    'l': 6,
+    'w': 4,
+    'pt': 13,
+    'msg': 7,
+    'ss': ObjectId(
+    '5ac8e5df85f7f64d4be5cca5'
+    ),
+    'd': 1,
+    'pr': {
+      '1x2': {
+        'v': 5.5803,
+        'c': 11
+      }
+    },
+    'lmn': 11,
+    'nm': ObjectId(
+    '5acb724985f7f61006ae12d1'
+    ),
+    'ga': 15,
+    'loc': 'h'
+  },
+  {
+    'tm': 'Corinthians',
+    'mcg': 8,
+    'gf': 12,
+    'd': 1,
+    'l': 6,
+    'w': 5,
+    'pt': 16,
+    'msg': 8,
+    'ss': ObjectId(
+    '5ac8e5df85f7f64d4be5cca5'
+    ),
+    'mp': 12,
+    'pr': {
+      '1x2': {
+        'v': 6.122,
+        'c': 12
+      }
+    },
+    'lmn': 12,
+    'nm': ObjectId(
+    '5acb724985f7f61006ae12c9'
+    ),
+    'ga': 15,
+    'loc': 'h'
+  },
+  {
+    'tm': 'Corinthians',
+    'mcg': 9,
+    'gf': 13,
+    'mp': 13,
+    'l': 6,
+    'w': 5,
+    'pt': 17,
+    'msg': 9,
+    'ss': ObjectId(
+    '5ac8e5df85f7f64d4be5cca5'
+    ),
+    'd': 2,
+    'pr': {
+      '1x2': {
+        'v': 6.6639,
+        'c': 13
+      }
+    },
+    'lmn': 13,
+    'nm': ObjectId(
+    '5acb724985f7f61006ae12ba'
+    ),
+    'ga': 16,
+    'loc': 'h'
+  },
+  {
+    'tm': 'Corinthians',
+    'mcg': 9,
+    'gf': 13,
+    'd': 2,
+    'l': 6,
+    'w': 5,
+    'pt': 17,
+    'msg': 9,
+    'ss': ObjectId(
+    '5ac8e5df85f7f64d4be5cca5'
+    ),
+    'mp': 13,
+    'pr': {
+      '1x2': {
+        'v': 6.6639,
+        'c': 13
+      }
+    },
+    'lmn': 13,
+    'nm': ObjectId(
+    '5acb724985f7f61006ae12af'
+    ),
+    'ga': 16,
+    'loc': 'h'
+  },
+  {
+    'tm': 'Corinthians',
+    'mcg': 10,
+    'gf': 13,
+    'mp': 14,
+    'l': 7,
+    'w': 5,
+    'pt': 17,
+    'msg': 9,
+    'ss': ObjectId(
+    '5ac8e5df85f7f64d4be5cca5'
+    ),
+    'd': 2,
+    'pr': {
+      '1x2': {
+        'v': 7.0836,
+        'c': 14
+      }
+    },
+    'lmn': 14,
+    'nm': ObjectId(
+    '5acb724985f7f61006ae12a2'
+    ),
+    'ga': 19,
+    'loc': 'h'
+  },
+  {
+    'tm': 'Corinthians',
+    'mcg': 10,
+    'gf': 13,
+    'd': 2,
+    'l': 7,
+    'w': 5,
+    'pt': 17,
+    'msg': 9,
+    'ss': ObjectId(
+    '5ac8e5df85f7f64d4be5cca5'
+    ),
+    'mp': 14,
+    'pr': {
+      '1x2': {
+        'v': 7.0836,
+        'c': 14
+      }
+    },
+    'lmn': 14,
+    'nm': ObjectId(
+    '5acb724985f7f61006ae1299'
+    ),
+    'ga': 19,
+    'loc': 'h'
+  },
+  {
+    'tm': 'Corinthians',
+    'mcg': 10,
+    'gf': 13,
+    'mp': 14,
+    'l': 7,
+    'w': 5,
+    'pt': 17,
+    'msg': 9,
+    'ss': ObjectId(
+    '5ac8e5df85f7f64d4be5cca5'
+    ),
+    'd': 2,
+    'pr': {
+      '1x2': {
+        'v': 7.0836,
+        'c': 14
+      }
+    },
+    'lmn': 14,
+    'nm': ObjectId(
+    '5acb724985f7f61006ae128e'
+    ),
+    'ga': 19,
+    'loc': 'h'
+  },
+  {
+    'tm': 'Corinthians',
+    'mcg': 10,
+    'gf': 14,
+    'd': 2,
+    'l': 7,
+    'w': 6,
+    'pt': 20,
+    'msg': 10,
+    'ss': ObjectId(
+    '5ac8e5df85f7f64d4be5cca5'
+    ),
+    'mp': 15,
+    'pr': {
+      '1x2': {
+        'v': 7.5516,
+        'c': 15
+      }
+    },
+    'lmn': 15,
+    'nm': ObjectId(
+    '5acb724985f7f61006ae1284'
+    ),
+    'ga': 19,
+    'loc': 'h'
+  },
+  {
+    'tm': 'Corinthians',
+    'mcg': 10,
+    'gf': 15,
+    'mp': 16,
+    'l': 7,
+    'w': 7,
+    'pt': 23,
+    'msg': 11,
+    'ss': ObjectId(
+    '5ac8e5df85f7f64d4be5cca5'
+    ),
+    'd': 2,
+    'pr': {
+      '1x2': {
+        'v': 7.9399,
+        'c': 16
+      }
+    },
+    'lmn': 16,
+    'nm': ObjectId(
+    '5acb724985f7f61006ae1282'
+    ),
+    'ga': 19,
+    'loc': 'h'
+  },
+  {
+    'tm': 'Corinthians',
+    'mcg': 10,
+    'gf': 15,
+    'd': 2,
+    'l': 7,
+    'w': 7,
+    'pt': 23,
+    'msg': 11,
+    'ss': ObjectId(
+    '5ac8e5df85f7f64d4be5cca5'
+    ),
+    'mp': 16,
+    'pr': {
+      '1x2': {
+        'v': 7.9399,
+        'c': 16
+      }
+    },
+    'lmn': 16,
+    'nm': ObjectId(
+    '5acb724985f7f61006ae1274'
+    ),
+    'ga': 19,
+    'loc': 'h'
+  },
+  {
+    'tm': 'Corinthians',
+    'mcg': 10,
+    'gf': 16,
+    'mp': 17,
+    'l': 7,
+    'w': 8,
+    'pt': 26,
+    'msg': 12,
+    'ss': ObjectId(
+    '5ac8e5df85f7f64d4be5cca5'
+    ),
+    'd': 2,
+    'pr': {
+      '1x2': {
+        'v': 8.6735,
+        'c': 17
+      }
+    },
+    'lmn': 17,
+    'nm': ObjectId(
+    '5acb724985f7f61006ae1266'
+    ),
+    'ga': 19,
+    'loc': 'h'
+  },
+  {
+    'tm': 'Corinthians',
+    'mcg': 10,
+    'gf': 16,
+    'd': 2,
+    'l': 7,
+    'w': 8,
+    'pt': 26,
+    'msg': 12,
+    'ss': ObjectId(
+    '5ac8e5df85f7f64d4be5cca5'
+    ),
+    'mp': 17,
+    'pr': {
+      '1x2': {
+        'v': 8.6735,
+        'c': 17
+      }
+    },
+    'lmn': 17,
+    'nm': ObjectId(
+    '5acb724985f7f61006ae125e'
+    ),
+    'ga': 19,
+    'loc': 'h'
+  },
+  {
+    'tm': 'Corinthians',
+    'mcg': 10,
+    'gf': 16,
+    'mp': 17,
+    'l': 7,
+    'w': 8,
+    'pt': 26,
+    'msg': 12,
+    'ss': ObjectId(
+    '5ac8e5df85f7f64d4be5cca5'
+    ),
+    'd': 2,
+    'pr': {
+      '1x2': {
+        'v': 8.6735,
+        'c': 17
+      }
+    },
+    'lmn': 17,
+    'nm': ObjectId(
+    '5acb724985f7f61006ae1252'
+    ),
+    'ga': 19,
+    'loc': 'h'
+  },
+  {
+    'tm': 'Corinthians',
+    'mcg': 11,
+    'gf': 17,
+    'd': 3,
+    'l': 7,
+    'w': 8,
+    'pt': 27,
+    'msg': 13,
+    'ss': ObjectId(
+    '5ac8e5df85f7f64d4be5cca5'
+    ),
+    'mp': 18,
+    'pr': {
+      '1x2': {
+        'v': 9.2261,
+        'c': 18
+      }
+    },
+    'lmn': 18,
+    'nm': ObjectId(
+    '5acb724985f7f61006ae124e'
+    ),
+    'ga': 20,
+    'loc': 'h'
+  },
+  {
+    'tm': 'Corinthians',
+    'mcg': 11,
+    'gf': 17,
+    'mp': 18,
+    'l': 7,
+    'w': 8,
+    'pt': 27,
+    'msg': 13,
+    'ss': ObjectId(
+    '5ac8e5df85f7f64d4be5cca5'
+    ),
+    'd': 3,
+    'pr': {
+      '1x2': {
+        'v': 9.2261,
+        'c': 18
+      }
+    },
+    'lmn': 18,
+    'nm': ObjectId(
+    '5acb724985f7f61006ae123e'
+    ),
+    'ga': 20,
+    'loc': 'h'
+  },
+  {
+    'tm': 'Corinthians',
+    'mcg': 12,
+    'gf': 22,
+    'd': 3,
+    'l': 7,
+    'w': 9,
+    'pt': 30,
+    'msg': 14,
+    'ss': ObjectId(
+    '5ac8e5df85f7f64d4be5cca5'
+    ),
+    'mp': 19,
+    'pr': {
+      '1x2': {
+        'v': 9.7834,
+        'c': 19
+      }
+    },
+    'lmn': 19,
+    'nm': ObjectId(
+    '5acb724985f7f61006ae1233'
+    ),
+    'ga': 23,
+    'loc': 'h'
+  }
+]
